@@ -1,0 +1,37 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Credentials / local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# Olist source and extracted transaction data:
+# Obtain from the original publisher and run the SQL transformations.
+data/raw/
+data/processed/
+data/*.csv
+data/*.zip
+*.sqlite
+
+# Local model and report temp files
+*.pbitmp
+~$*.pbix
+~$*.docx
+*.tmp
+
+# Keep final dashboard, screenshots and selected reproducible results.
+# Note: GitHub has a per-file size limit. See dashboard/README.md.
