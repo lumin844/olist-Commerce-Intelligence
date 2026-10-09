@@ -1,144 +1,143 @@
 # Olist Commerce Intelligence 360
 
-**SQL · Python · Power BI | E-commerce analytics portfolio**
+**An end-to-end e-commerce analytics portfolio | MySQL · Python · Power BI**
 
-A business-focused analytics project built on the public Olist Brazilian
-e-commerce dataset. It follows the full workflow from multi-table data
-quality and order-level modeling to commercial dashboards, customer
-segmentation, fulfillment diagnostics and statistical validation.
+This project analyzes Olist's public Brazilian e-commerce transactions through a business-focused workflow: data quality → order-level semantic modeling → commercial and customer analysis → operational diagnostics → interactive dashboards → statistical validation.
 
-> **Portfolio status:** Repository documentation is online. The original
-> numbered SQL source files, final 4-page Power BI `.pbix`, polished
-> screenshots and verified exported statistics still need to be added
-> from the local project. This is **not yet** a fully reproducible release.
+[**Explore the SQL analysis**](sql/) · [**Open the Python notebook**](python/01_delivery_review_analysis.ipynb) · [**Browse the dashboard gallery**](dashboard/README.md) · [**Metric definitions**](docs/metric_definitions.md)
+
+## Dashboard gallery
+
+### 01 · Executive Overview
+Business scale, GMV and order trends, category contribution, and geographic fulfillment risk.
+
+![Executive Overview](images/01_executive_overview.png)
+
+### 02 · Customer Intelligence
+Purchase frequency, customer value concentration, cohort repeat purchase, and RFM segmentation.
+
+![Customer Intelligence](images/02_customer_intelligence.png)
+
+### 03 · Product & Seller Intelligence
+Category ABC portfolio, seller GMV contribution, and seller fulfillment diagnosis.
+
+![Product and Seller Intelligence](images/03_product_seller_intelligence.png)
+
+### 04 · Fulfillment & Customer Experience
+Delay severity, review distributions, customer experience groups, and delivery distance.
+
+![Fulfillment and Customer Experience](images/04_fulfillment_experience.png)
+
+> **Viewing note:** the repository currently contains the four dashboard images, **not a Power BI `.pbix` file or a live Power BI link**. The screenshots show the dashboard as exported, without recreating the underlying interactions in GitHub.
 
 ## Business questions
 
-- How do delivered-order GMV, order count, AOV and customer base evolve?
-- How much do repeat customers contribute to historical customer value?
-- Which product categories and sellers concentrate commercial activity?
-- How are seller dispatch, delivery delay and customer reviews related?
-- Do those patterns persist after accounting for observable order factors?
+1. How do delivered-order merchandise GMV, order volume, customer count and AOV evolve?
+2. What do purchase frequency, cohorts, RFM segments and customer value reveal?
+3. Which categories and sellers concentrate merchandise value?
+4. How are seller dispatch, delivery delay and customer reviews associated?
+5. How robust is the delivery–review association across order characteristics?
 
-## Project overview
-
-| Area | Methods / output |
-| --- | --- |
-| Data modeling | MySQL 8, grain-preserving order semantic views |
-| Commercial analysis | Monthly growth, delivered-order GMV and AOV |
-| Customer intelligence | Frequency, cohorts, repeat rate, Pareto, RFM |
-| Product & seller | ABC category portfolio, seller ranking and risk exploration |
-| Operations | Delivery stages, customer reviews, geographic proxies |
-| Statistical evidence | Risk difference/ratio, chi-square, Logistic GLM, 95% CIs |
-| BI presentation | Four-page Power BI executive-to-operations story |
-
-## Power BI dashboard
-
-The completed dashboard is organized as four analytical pages.
-Final screenshots and the Power BI source file will be added after local export.
-
-| Page | Focus |
-| --- | --- |
-| **01 — Executive Overview** | GMV, delivered orders, customers, AOV, growth and regional fulfillment |
-| **02 — Customer Intelligence** | Repeat purchase, customer value concentration, cohorts and RFM |
-| **03 — Product & Seller Intelligence** | Category ABC, seller contribution and fulfillment diagnosis |
-| **04 — Fulfillment & Customer Experience** | Delivery delay, reviews, severity, experience groups and distance |
-
-See [dashboard documentation](dashboard/README.md) for page definitions
-and modeling conventions.
-
-## Data architecture
+## Analytics workflow
 
 ```text
-Nine original Olist CSV tables
-    |
-    v
-MySQL source profiling + quality checks
-    |
-    v
-Semantic views (1 row/order, order-item and seller-grain summaries)
-    |
-    +--> Reporting views --> Power BI shared dimensions + facts
-    |
-    +--> Order-level export --> Python statistical notebook
+Public Olist dataset (9 source CSVs)
+              │
+              ▼
+    MySQL profiling + quality checks
+              │
+              ▼
+    Semantic views by explicit data grain
+    (order, order item, customer, seller)
+              │
+       ┌──────┴────────────┐
+       ▼                   ▼
+  Reporting views      Statistical export
+       │                   │
+       ▼                   ▼
+  Power BI dashboard   Python / GLM analysis
 ```
 
-**Grain safety matters.** Payments and order items are separate 1-to-many
-tables; joining both unaggregated to orders duplicates business measures.
-Customer reporting uses `customer_unique_id` rather than `customer_id`.
+**Grain discipline:** item, payment and review records are not always one row per order. The SQL analysis aggregates one-to-many relationships before joining them to order-level measures. A customer's cross-order identifier is `customer_unique_id`.
 
-See [metrics](docs/metric_definitions.md), [analysis framework](docs/analysis_framework.md),
-and [source data notes](data/README.md).
+## Methods and evidence
 
-## Selected findings (previous exploratory outputs)
+| Domain | Included analyses |
+| --- | --- |
+| Growth | Delivered-order GMV, customers, orders, AOV, trends |
+| Customer | Repeat purchase, cohort, customer Pareto, RFM |
+| Product & Seller | Category ABC, commercial concentration, seller fulfillment |
+| Operations | Dispatch, delays, order reviews, geographic patterns |
+| Statistical validation | Chi-square, risk difference, risk ratio, Logistic regression and sensitivity analysis |
 
-- Customer repeat purchase is relatively uncommon in the observed
-  window; retrospective customer value differs by purchase frequency.
-- In one reviewed-order analysis using the original delay flag, low
-  ratings occurred in **54.07%** of delayed orders vs **9.22%** of
-  non-delayed orders (RR **5.863**, 95% CI **5.694–6.037**).
-- Delivery delay and review score show an association, **not a proven
-  causal effect**. The timestamp/calendar-day boundary and differences
-  in missing-review coverage must be disclosed.
+### Delivery delay and reviews
 
-See [key findings and cautions](docs/key_findings.md). Final adjusted
-model estimates should be quoted from the local, verified exports only.
+In the order-level analysis using the original delay flag, **9.22%** of non-delayed reviewed orders and **54.07%** of delayed reviewed orders received a low rating (1–2 stars). The corresponding **risk ratio was 5.863** (95% CI: 5.694–6.037).
 
-## Repository organization
+The association is **not causal evidence**. Timestamp-level delay flags and day-binned delay severity require careful interpretation; the notebook documents its precise definition and excludes missing reviews from the rate denominator.
+
+![Low-rating rate by delay severity](images/statistical/01_delay_severity_ci.png)
+
+![Adjusted OR by delay severity](images/statistical/02_severity_or_forest.png)
+
+[See the full methodological notes](docs/key_findings.md).
+
+## Repository structure
 
 ```text
 .
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
-├── data/
-│   └── README.md
-├── docs/
-│   ├── metric_definitions.md
-│   ├── analysis_framework.md
-│   └── key_findings.md
 ├── sql/
-│   └── README.md
+│   ├── 01_data_profile.sql
+│   ├── 02_data_quality.sql
+│   ├── 03_semantic_layer.sql
+│   ├── ... (analysis chapters 04–15)
+│   ├── 16_reporting_views.sql
+│   └── 17_delivery_review_extract.sql
 ├── python/
+│   ├── 01_delivery_review_analysis.ipynb
 │   └── README.md
 ├── dashboard/
 │   └── README.md
-├── images/                 # final dashboard/analysis images to be added
-└── results/                # verified aggregate outputs to be added
+├── images/
+│   ├── 01_executive_overview.png
+│   ├── 02_customer_intelligence.png
+│   ├── 03_product_seller_intelligence.png
+│   ├── 04_fulfillment_experience.png
+│   └── statistical/
+│       ├── 01_delay_severity_ci.png
+│       └── 02_severity_or_forest.png
+├── data/
+│   └── README.md
+└── docs/
+    ├── analysis_framework.md
+    ├── key_findings.md
+    └── metric_definitions.md
 ```
 
-The number-labeled SQL scripts (00–16), local notebooks, dashboard file
-and image exports are being added separately. Do not infer that files
-listed in the workflow are already present in this repository.
+## Reproduction
 
-## How to reproduce
+1. Download the [public Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) and create the MySQL source tables, matching the source names referenced in the scripts. Source data and table-creation DDL are **not** bundled in this repository.
+2. Execute the SQL chapters in numeric order, checking source table names, MySQL 8 compatibility and row-count/grain assertions. The later diagnostic SQL revises some earlier cohort logic; inspect script dependencies before recreating views on an existing database.
+3. Import the `rpt_*` reporting views into Power BI and recreate the report pages from the screenshots and [dashboard notes](dashboard/README.md). The original editable `.pbix` is not included.
+4. Run `sql/17_delivery_review_extract.sql` and export the order-level CSV locally to `data/processed/delivery_review_orders.csv`.
+5. Install Python dependencies with `pip install -r requirements.txt`, open [the statistical notebook](python/01_delivery_review_analysis.ipynb), and run its cells in order. Some cells reflect exploratory analysis iterations; the notebook is shared as analysis history, not a validated one-click pipeline.
 
-1. Obtain the public [Olist Brazilian E-Commerce Dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
-2. Load the original nine CSV tables into MySQL 8.x.
-3. Run the project's original numbered SQL scripts when available,
-   checking row counts, join grain and monetary reconciliation.
-4. Import curated reporting views to Power BI; use single-direction
-   relationships and grain-appropriate measures.
-5. Extract an order-grain statistical dataset and run the notebook in
-   a local virtual environment (`pip install -r requirements.txt`).
+The notebooks and reporting queries are provided for examination and learning; full one-click replication still requires the local database schema and Power BI source file.
 
-**Currently the full numbered SQL scripts and local dashboard assets have
-not been uploaded, so reproduction is not yet end-to-end.**
+## Definitions and limitations
 
-## Scope and limitations
+- **GMV** is delivered-order item-price revenue, excluding freight; it is not net profit.
+- **Repeat rate / RFM** refer to the observed period and have limited historical-comparability semantics.
+- **Customer reviews** are order-level evidence, not automatically product- or seller-specific ratings.
+- **Distance** uses approximated straight-line geography on a restricted order subset.
+- **Statistical results** describe historical associations, not causal impacts.
+- The dataset lacks complete cost, acquisition and experimentation data.
 
-The dataset is historical and does not provide cost of goods, acquisition
-spend, complete causal drivers, or a contemporary operational feed.
-Delivered-only revenue definitions, review selection, the exact delay
-definition and potential cohort right censoring are documented.
-Some order-level review information cannot legitimately be assigned to
-individual products or sellers without further assumptions.
+See [metric definitions](docs/metric_definitions.md) and [data provenance](data/README.md).
 
-## Source and acknowledgments
+## Source
 
-Source: Olist, **Brazilian E-Commerce Public Dataset** on
-[Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
-
-The analysis, model definitions and dashboard narrative are an
-independent educational/portfolio exercise and do not represent an
-official Olist operating report.
+[Olist Brazilian E-Commerce Public Dataset — Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce). Independent educational analysis; not an official Olist business report.
