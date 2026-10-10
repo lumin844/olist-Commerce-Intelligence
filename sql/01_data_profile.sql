@@ -1,4 +1,4 @@
--- 1. Table Size
+-- 1. 原始表数据规模
 SHOW TABLES;
 SELECT 'customers' AS table_name, COUNT(*) AS row_count FROM customers UNION ALL
 
@@ -18,7 +18,7 @@ SELECT 'geolocation', COUNT(*) FROM geolocations UNION ALL
 
 SELECT 'category_translation', COUNT(*) FROM category_translation;
 
--- 2.Granularity
+-- 2. 数据粒度检查
 SELECT
     COUNT(*) AS total_rows,COUNT(DISTINCT customer_id) AS customer_id_count,COUNT(DISTINCT customer_unique_id) AS unique_customer_count
 FROM customers;
@@ -35,7 +35,7 @@ SELECT
     COUNT(*) AS payment_records,COUNT(DISTINCT order_id) AS orders_with_payment
 FROM payments;
 
--- 3.
+-- 3. 时间范围
 SELECT
     MIN(order_purchase_timestamp) AS first_order_time,MAX(order_purchase_timestamp) AS last_order_time,
     DATEDIFF(
@@ -43,7 +43,7 @@ SELECT
     ) AS total_days
 FROM orders;
 
--- 4.
+-- 4. 业务分布
 SELECT
     order_status,COUNT(*) AS order_count,
     ROUND(
