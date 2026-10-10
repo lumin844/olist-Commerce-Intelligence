@@ -2,8 +2,6 @@
 
 [查看 Notebook](01_delivery_review_analysis.ipynb) · [查看统计图](../images/statistical/) · [查看业务发现](../docs/key_findings.md)
 
-本目录保留项目实际使用的 **`01_delivery_review_analysis.ipynb`**。Notebook 包含数据检查、延迟组与低评分率比较、卡方检验、风险差与风险比、Logistic 回归、模型标准化预测概率和延迟严重程度分析。
-
 ## 输入数据
 
 运行 [SQL 订单提取脚本](../sql/17_delivery_review_extract.sql)，将查询结果作为 CSV 放入本地：
@@ -23,7 +21,7 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-使用 VS Code / Jupyter 打开 Notebook，选择相应 Kernel，**从上到下执行**。此文件保存了分析过程中迭代后的代码：需要查看各模型所在 Cell 的实际变量及口径，不应假设每个中间版本都能独立执行。
+使用 VS Code / 打开 Notebook，选择相应 Kernel，**从上到下执行**。此文件保存了分析过程中迭代后的代码：需要查看各模型所在 Cell 的实际变量及口径，不应假设每个中间版本都能独立执行。
 
 ## 分析边界
 
