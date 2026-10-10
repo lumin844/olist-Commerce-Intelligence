@@ -1,40 +1,22 @@
-# Business analysis framework
+# 业务分析框架｜Business Analysis Framework
 
-## Central business question
-What are the drivers of the platform's merchandise volume and where do
-customer value, seller operations and fulfillment performance require
-additional investigation?
+**目标：** 通过电商交易数据，判断经营规模与结构、客户长期价值、商品及卖家运营表现，并识别需要进一步核查的履约与体验问题。
 
-## Analysis layers
+| 分析阶段 | 业务问题 | 主要分析方法 |
+| --- | --- | --- |
+| 经营增长 | GMV、订单与客户规模如何变化？ | 月度趋势、MoM、AOV |
+| 用户价值 | 谁在复购？价值如何分布？ | 购买频率、Pareto、Cohort、RFM |
+| 商品组合 | 哪些品类支撑商品收入？ | 品类 GMV、ABC、评价结构 |
+| 卖家运营 | 哪些卖家重要？履约风险如何？ | 卖家 GMV、发货延迟、交付延迟 |
+| 物流与体验 | 交付问题与评价之间有何关联？ | 延迟区间、Review、距离及运费 |
+| 统计验证 | 观察到的评分差异有多大、是否稳定？ | 卡方、RD、RR、Logistic、95% CI |
 
-1. **Scale & growth** — delivered-order GMV, orders, AOV and monthly trends.
-2. **Customer behavior** — purchase frequency, repeat purchase, cohort
-   retention, lifetime value and RFM snapshots.
-3. **Portfolio & supply** — category contribution and ABC, seller
-   concentration, ratings and dispatch performance.
-4. **Fulfillment & experience** — on-time performance, delay severity,
-   customer reviews and logistic association.
-5. **Geography & payments** — customer-state demand, seller origins,
-   payment methods, single-seller approximate transport distance.
-6. **Decision support** — business impact vs issue severity; proposed
-   investigations and carefully scoped experiments.
+## 分析中最重要的技术选择
 
-## Statistical analysis design
+**明确分析粒度。** 订单、商品、支付和评价记录存在一对多关系，直接相连可能重复累计金额；语义层中先按适当粒度聚合，再连接事实表。
 
-- Unit: delivered order, one row/order.
-- Reviewed subset: restrict to valid 1–5 scores when studying low ratings.
-- Primary contrast: late vs not late; low rating = 1–2.
-- Report absolute risk difference, relative risk, confidence intervals.
-- Multivariable logistic regression controls available order covariates;
-  customer-clustered standard errors address repeated customers.
-- Sensitivity: severity groups and single-seller subset.
-- Interpret as association, not causation; review missingness, observation
-  windows and unobserved confounding limit inference.
+**一致的指标定义。** 以已交付订单计算商品 GMV（不含运费），以 `customer_unique_id` 分析真实购买客户；评价比例仅以有效评分订单为分母。
 
-## Evidence standards
+**正确解释统计结果。** Logistic 回归用于研究延迟和低评分的调整后关联，不是因果识别。时间定义、缺失评分、有限观察期和未观测因素都会影响解释边界。
 
-Always distinguish:
-**Observed fact** → **Comparison** → **Interpretation** → **Hypothesis**.
-
-Publish exact verified results, the sample definition and the original
-query/notebook that supports each claim.
+最终呈现遵循：**事实 → 对比 → 解释 → 业务启发**，避免在缺乏证据时将相关关系写成确定原因。
