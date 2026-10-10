@@ -116,17 +116,6 @@ The association is **not causal evidence**. Timestamp-level delay flags and day-
     ├── key_findings.md
     └── metric_definitions.md
 ```
-
-## Reproduction
-
-1. Download the [public Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) and create the MySQL source tables, matching the source names referenced in the scripts. Source data and table-creation DDL are **not** bundled in this repository.
-2. Execute the SQL chapters in numeric order, checking source table names, MySQL 8 compatibility and row-count/grain assertions. The later diagnostic SQL revises some earlier cohort logic; inspect script dependencies before recreating views on an existing database.
-3. Import the `rpt_*` reporting views into Power BI and recreate the report pages from the screenshots and [dashboard notes](dashboard/README.md). The original editable `.pbix` is not included.
-4. Run `sql/17_delivery_review_extract.sql` and export the order-level CSV locally to `data/processed/delivery_review_orders.csv`.
-5. Install Python dependencies with `pip install -r requirements.txt`, open [the statistical notebook](python/01_delivery_review_analysis.ipynb), and run its cells in order. Some cells reflect exploratory analysis iterations; the notebook is shared as analysis history, not a validated one-click pipeline.
-
-The notebooks and reporting queries are provided for examination and learning; full one-click replication still requires the local database schema and Power BI source file.
-
 ## Definitions and limitations
 
 - **GMV** is delivered-order item-price revenue, excluding freight; it is not net profit.
