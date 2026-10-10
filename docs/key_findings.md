@@ -1,37 +1,50 @@
-# Key findings | observed association and business context
+# 核心业务发现与统计解释
 
-## 1. Customer repeat behavior
+本项目以历史订单数据识别业务现象，并通过描述性统计与回归模型检验关联。文中的指标采用对应分析阶段的既定口径；**业务关联不等于因果关系**。
 
-The Customer Intelligence dashboard displays an approximately **3.0%** observed-period repeat-customer rate and a **1.9×** repeat-to-one-time average historical spend multiple.
+## 一、客户复购：客户数量与历史价值的差异
 
-**Interpretation:** historical repeat customers purchased more over the observation period; this is not proof that a repeat-purchase campaign creates the same uplift. Follow-up analysis should consider customer tenure and cohort eligibility.
+客户分析面板显示：观察期内复购客户比例约为 **3.0%**，复购客户的人均历史商品消费金额约为一次性购买客户的 **1.9 倍**。
 
-## 2. Fulfillment and reviews
+**业务解读：** 全周期复购占比较低，值得进一步分析首购后多久发生第二次购买，以及不同 Cohort 的重复购买情况。但复购客户的历史累计消费金额较高，并不等于实施促复购活动就能获得相同幅度的增量收入；两类客户的可观察购买时间可能不同。
 
-In the original order-grain, reviewed-order analysis:
+**建议调查：** 关注首购到二购的转化、不同首次购买月份的复购表现，以及高价值但近期未购买的客户群体。
 
-| Delivery flag | Reviewed orders | 1–2 star orders | Low-rating rate |
+## 二、配送延迟：与客户低评分的关联显著
+
+根据原始二分类延迟标记，在具有有效评分的已交付订单中：
+
+| 订单分组 | 有效评分订单 | 1—2 星订单 | 低评分率 |
 | --- | ---: | ---: | ---: |
-| Not delayed | 88,163 | 8,130 | 9.22% |
-| Delayed | 7,661 | 4,142 | 54.07% |
+| 未延迟 | 88,163 | 8,130 | **9.22%** |
+| 延迟 | 7,661 | 4,142 | **54.07%** |
 
-- Risk difference: **44.84 percentage points** (95% CI **43.71–45.97 pp**).
-- Risk ratio: **5.863** (95% CI **5.694–6.037**).
-- Pearson χ²(1) ≈ **12,693.82**, p < 0.001.
+主要统计结果：
 
-The delay flag was time-sensitive; day-based severity groups may classify sub-day delays differently. The notebook provides the calculation history. These are **descriptive/associational** statistics, not a causal effect of delayed delivery.
+- **风险差（RD）：44.84 个百分点**，95% 置信区间为 **43.71～45.97 个百分点**。
+- **风险比（RR）：5.863**，95% 置信区间为 **5.694～6.037**。
+- **Pearson 卡方检验：** χ²(1) ≈ 12,693.82，p < 0.001。
 
-## 3. Severity and operational diagnosis
+**业务解读：** 延迟组低评分比例明显较高，履约体验值得作为经营诊断的重点。不过，这些指标不表示延迟本身造成同等幅度的评分变化。
 
-The exploration found that low-rating risk rose markedly across increasingly late delivery groups and was not strictly monotonic between the most severe groups. The [severity bar chart](../images/statistical/01_delay_severity_ci.png) and [adjusted-OR forest plot](../images/statistical/02_severity_or_forest.png) illustrate the analysis.
+**分析口径：** 上述数字以原始 `is_delayed` 标记为依据。按完整天数计算的 `delay_days` 可能将不足一天的延迟记为 0，因此**二分类延迟率与按天数划分的严重程度分组并不完全等价**。
 
-**Operational focus:** compare high-impact seller and delivery groups by GMV, frequency and observed review coverage before prioritizing investigation; do not attribute all delayed orders to sellers.
+## 三、延迟程度：识别更高风险的订单群体
 
-## Limitations
+初步严重程度分析显示，低评分率随延迟天数增加显著升高；但在最高的两个延迟组之间，并未呈现严格单调上升。判断组间差异时应同时考察样本量和置信区间，而不是只比较柱形高度。
 
-- Analysis is historical; review availability differs between delayed and non-delayed groups.
-- Logistic OR is not a probability ratio. The adjusted estimates do not prove causality.
-- The raw data does not contain complete commercial margins, ad spend or experimentally identified drivers.
-- Cohort comparisons have different observation windows.
+| 各延迟组低评分率（含置信区间） | 不同延迟组调整后 OR（森林图） |
+| --- | --- |
+| ![不同延迟程度的低评分率](../images/statistical/01_delay_severity_ci.png) | ![不同延迟程度的调整后优势比](../images/statistical/02_severity_or_forest.png) |
 
-See [Metric definitions](metric_definitions.md) and the [Python notebook](../python/01_delivery_review_analysis.ipynb) for the supporting methodology.
+**建议调查：** 优先核查严重延迟、高 GMV 与低评分同时集中的卖家或配送群体；需要结合实际发货环节与承运商信息判断责任，不能将全部延迟简单归责于卖家。
+
+## 四、统计边界
+
+- 客户评分可能缺失，且延迟订单与未延迟订单的有效评分覆盖率不同，存在样本选择偏差的可能。
+- **Logistic 回归的 OR（优势比）不是 RR（风险比）**，也不等于概率上升的倍数。
+- 即使调整金额、运费、商品数量、地区及月份等变量，未观测的商品质量、客户预期和售后服务等因素仍可能影响结论。
+- Cohort 与全周期客户分类受观察窗口影响；地理距离为近似测量。
+- 原始数据不包含完整利润成本、获客费用或实验信息，无法直接计算策略实施后的收益。
+
+**相关内容：** [指标与口径说明](metric_definitions.md) · [Python 统计 Notebook](../python/01_delivery_review_analysis.ipynb) · [业务分析框架](analysis_framework.md)。

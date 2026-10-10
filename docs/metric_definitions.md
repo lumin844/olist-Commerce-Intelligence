@@ -1,27 +1,32 @@
-# Metric definitions
+# 核心指标定义与分析口径
 
-These definitions govern SQL, Power BI and Python analysis.
+本项目的 SQL、Power BI 与 Python 分析围绕统一的**订单、客户、订单商品和卖家粒度**展开。不同时间范围或分母下的指标不能直接混用。
 
-| Metric | Definition | Grain / caveat |
+| 指标 | 计算口径 | 注意事项 |
 | --- | --- | --- |
-| Delivered orders | DISTINCT order_id where order_status='delivered' | Order |
-| Customers | DISTINCT customer_unique_id on delivered orders | Customer |
-| Merchandise GMV | SUM(order item price), delivered orders | Excludes freight |
-| Freight | SUM(order item freight_value), delivered orders | Items summed once |
-| Gross order value | Merchandise GMV + freight | Not equal to payment value |
-| AOV | Merchandise GMV / delivered orders | Delivered-order scope |
-| Repeat customer | Customer with >=2 delivered orders during observed period | Full-period classification |
-| Repeat rate | Repeat customers / delivered-order customers | Subject to right censoring |
-| Latest review score | Latest review per order using deterministic timestamp/id selection | One review score/order |
-| Low-rating rate | Orders with 1-2 star score / orders with valid review score | Excludes missing reviews |
-| Delay rate | Delayed / delivered orders with observable timing | **Declare timestamp vs calendar-day definition** |
-| Cohort M1 | Customers buying in next calendar month / customers acquired in cohort month | Repeat purchase, not app retention |
-| RFM | Recency, frequency and monetary features at a fixed analysis cutoff | Historical snapshot |
-| Seller GMV | Delivered item-price revenue assigned to seller | Order × seller aggregation |
-| Geographic distance | ZIP-centroid straight-line seller-to-customer distance | Single-seller delivered order subset |
-| Risk Ratio | Low-rating probability in delayed group / not-delayed group | Observational association |
-| Logistic OR | Ratio of odds estimated by regression | **Not** probability ratio or causal effect |
+| 已交付订单数 | `order_status='delivered'` 的去重 `order_id` 数量 | 订单粒度 |
+| 购买客户数 | 已交付订单中的去重 `customer_unique_id` 数量 | 跨订单客户识别 |
+| 商品 GMV | 已交付订单的商品 `price` 求和 | **不包含运费** |
+| 运费金额 | 已交付订单商品明细的 `freight_value` 求和 | 订单商品明细先按正确粒度汇总 |
+| 含运费订单金额 | 商品 GMV + 运费金额 | 与支付金额并非同一业务概念 |
+| 客单价（AOV） | 商品 GMV ÷ 已交付订单数 | 观察期及订单状态必须一致 |
+| 复购客户 | 观察期内有至少两笔已交付订单的客户 | 全观察期分类 |
+| 复购率 | 复购客户数 ÷ 已交付订单的购买客户数 | 受到观察期长度与右删失影响 |
+| 最近一次订单评价 | 每笔订单按时间与确定性顺序选取对应评价 | 避免一笔订单重复计入多条评价 |
+| 低评分率 | 有效评分为 1 或 2 的订单数 ÷ 评分为 1～5 的订单数 | 不将缺失评分计为非低评分 |
+| 延迟率 | 延迟订单数 ÷ 能够判断是否延迟的已交付订单数 | 须明确采用时间戳或日历日定义 |
+| Cohort M1 | 首购后下一个自然月再次购买客户数 ÷ 该首购月客户数 | 属于重复购买，不是 App 活跃留存 |
+| RFM 分群 | 按固定截止日期的最近购买、频次和商品消费金额划分客户 | 快照分析，不是任意日期的历史实时分群 |
+| 卖家商品 GMV | 归属于各卖家的已交付商品 `price` 合计 | 按订单商品与卖家粒度计算 |
+| 运输距离（近似） | 单卖家订单中，以邮编中心点计算卖家到客户的直线距离 | 非真实行车距离或物流线路 |
+| 风险差（RD） | 延迟组低评分率 − 未延迟组低评分率 | 通常以百分点表示 |
+| 风险比（RR） | 延迟组低评分率 ÷ 未延迟组低评分率 | 反映观察性比例差异 |
+| Logistic 优势比（OR） | 回归模型估计的优势（odds）之比 | **不等于 RR，也不是因果效应** |
 
-Use explicitly named denominators for all proportions, retain unreviewed orders
-when auditing review coverage and avoid attributing all order-level ratings to
-individual products or sellers.
+## 口径一致性要求
+
+1. **先确定分析粒度：** 原始订单商品、支付与评价记录可能是一对多关系；应先汇总，再进行会导致重复计数的关联。
+2. **统一样本范围：** 描述性经营指标通常基于已交付订单；评分分析应进一步限制为有效评分订单，并报告评分覆盖率。
+3. **保留时间精度说明：** `is_delayed` 与 `delay_days` 可能采用不同的时间比较精度；短时延迟需要单独说明。
+4. **区分经营指标：** 商品 GMV 不是实际利润，也不能直接代替付款金额、佣金或平台净收入。
+5. **谨慎解释风险指标：** 观察性关联不是因果结论；回归中的 OR 不等于低评分概率之比。

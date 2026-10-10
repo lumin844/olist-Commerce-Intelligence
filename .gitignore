@@ -1,4 +1,4 @@
-# Python
+# Python 虚拟环境、缓存与本地配置
 .venv/
 venv/
 __pycache__/
@@ -11,7 +11,7 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Credentials / local configuration
+# 本地凭据与敏感配置（请勿提交）
 .env
 .env.*
 !.env.example
@@ -19,19 +19,15 @@ Thumbs.db
 *.key
 credentials.json
 
-# Olist source and extracted transaction data:
-# Obtain from the original publisher and run the SQL transformations.
+# Olist 原始数据与中间数据：从原始发布方获取，不上传明细文件
 data/raw/
 data/processed/
 data/*.csv
 data/*.zip
 *.sqlite
 
-# Local model and report temp files
+# 运行临时文件
 *.pbitmp
 ~$*.pbix
 ~$*.docx
 *.tmp
-
-# Keep final dashboard, screenshots and selected reproducible results.
-# Note: GitHub has a per-file size limit. See dashboard/README.md.

@@ -1,5 +1,6 @@
-# Tested analysis stack depends on the user's local Python environment.
-# Install into a virtual environment; pin exact versions after final validation.
+# Python 统计分析环境依赖
+# 建议先创建虚拟环境，再安装以下依赖。
+# 具体版本请根据本地验证过的环境锁定。
 numpy
 pandas
 matplotlib
